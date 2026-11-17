@@ -23,7 +23,7 @@ public class Main
 		System.out.println("Java Hangman!");
 		System.out.println("************************");
 
-		// refactor the while loop in smaller sep pieces
+		// TODO: refactor the while loop in smaller sep pieces
 
 		while (wrongGuesses < MAX_WRONG)
 		{
@@ -88,7 +88,7 @@ public class Main
 	}
 	
 	
-	// replace with enums instead of switch case
+	// TODO: replace with enums instead of switch case
 	static String getHangmanArt(final int wrongGuesses)
 	{
 		return switch (wrongGuesses)
