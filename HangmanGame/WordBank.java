@@ -6,11 +6,6 @@ public class WordBank
 			"crocodile", "squirrel", "hedgehog" };
 	private static final Random		random	= new Random();
 	
-	private WordBank()
-	{
-	}
-	
-	
 	
 	public static String getRandomWord()
 	{
