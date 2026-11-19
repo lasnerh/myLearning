@@ -3,133 +3,142 @@ import java.util.Scanner;
 
 public class Main
 {
+	private static final String					WORD			= WordBank.getRandomWord();
+	private static final int					MAX_WRONG		= 5;
+	
+	private static final Scanner				scanner			= new Scanner(System.in);
+	private static final ArrayList<Character>	wordState		= new ArrayList<>();
+	private static final ArrayList<Character>	guessed			= new ArrayList<>();
+	private static int							wrongGuesses	= 0;
+	
 	public static void main(String[] args)
 	{
+		initWordState();
+		printTitle();
 		
-		String word = "monkey";
-		final int MAX_WRONG = 5;
-		
-		Scanner scanner = new Scanner(System.in);
-		ArrayList<Character> wordState = new ArrayList<>();
-		ArrayList<Character> guessed = new ArrayList<>();
-		int wrongGuesses = 0;
-		
-		for (int i = 0; i < word.length(); i++)
+		while (wrongGuesses < MAX_WRONG && !isWordGuessed())
 		{
-			wordState.add('_');
-		}
-		
-		System.out.println("************************");
-		System.out.println("Java Hangman!");
-		System.out.println("************************");
-
-		// TODO: refactor the while loop in smaller sep pieces
-
-		while (wrongGuesses < MAX_WRONG)
-		{
-			System.out.println(getHangmanArt(wrongGuesses));
-			
-			System.out.print("Word: ");
-			for (char c : wordState)
+			printRound();
+			Character guess = readGuess();
+			if (guess == null)
 			{
-				System.out.print(c + " ");
-			}
-			System.out.println();
-			
-			System.out.println("Wrong guesses: " + wrongGuesses + "/" + MAX_WRONG);
-			System.out.print("Guess a letter: ");
-			
-			String input = scanner.next().toLowerCase();
-			char guess = input.charAt(0);
-			
-			if (!Character.isLetter(guess))
-			{
-				System.out.println("Letters only.");
 				continue;
 			}
-			
-			if (guessed.contains(guess))
-			{
-				System.out.println("You already guessed '" + guess + "'.");
-				continue;
-			}
-			guessed.add(guess);
-			
-			if (word.indexOf(guess) >= 0)
-			{
-				System.out.println("Correct!");
-				for (int i = 0; i < word.length(); i++)
-				{
-					if (word.charAt(i) == guess)
-					{
-						wordState.set(i, guess);
-					}
-				}
-				
-				if (!wordState.contains('_'))
-				{
-					System.out.println(getHangmanArt(wrongGuesses));
-					System.out.println("YOU WIN! The word was: " + word);
-					scanner.close();
-					return;
-				}
-			}
-			else
-			{
-				wrongGuesses++;
-				System.out.println("Wrong!");
-			}
+			processGuess(guess);
 		}
 		
-		System.out.println(getHangmanArt(wrongGuesses));
-		System.out.println("GAME OVER! The word was: " + word);
-		
+		printResult();
 		scanner.close();
 	}
 	
 	
-	// TODO: replace with enums instead of switch case
-	static String getHangmanArt(final int wrongGuesses)
+	
+	private static void initWordState()
 	{
-		return switch (wrongGuesses)
+		for (int i = 0; i < WORD.length(); i++)
 		{
-		// formatter@off
-		case 0 -> """
-				
-				
-				""";
-		case 1 -> """
-				 o
-				
-				""";
-		case 2 -> """
-				 o
-				 |
-				
-				""";
-		case 3 -> """
-				
-				 o
-				/|
-				
-				""";
-	
-		case 4 -> """
-				
-				 o
-				/|\\
-				
-				""";
-	
-		case 5 -> """
-				
-				 o
-				/|\\
-				/ \\
-				""";
-		default -> "";
-		};
-		// formatter@on
+			wordState.add('_');
+		}
 	}
 	
+	
+	
+	private static void printTitle()
+	{
+		System.out.println("************************");
+		System.out.println("Java Hangman!");
+		System.out.println("************************");
+	}
+	
+	
+	
+	private static void printRound()
+	{
+		System.out.println(HangmanStage.fromWrongGuesses(wrongGuesses).getArt());
+		
+		System.out.print("Word: ");
+		for (char c : wordState)
+		{
+			System.out.print(c + " ");
+		}
+		System.out.println();
+		
+		System.out.println("Wrong guesses: " + wrongGuesses + "/" + MAX_WRONG);
+	}
+	
+	
+	
+	// returns null if the input is invalid or already guessed
+	private static Character readGuess()
+	{
+		System.out.print("Guess a letter: ");
+		char guess = scanner.next().toLowerCase().charAt(0);
+		
+		if (!Character.isLetter(guess))
+		{
+			System.out.println("Letters only.");
+			return null;
+		}
+		
+		if (guessed.contains(guess))
+		{
+			System.out.println("You already guessed '" + guess + "'.");
+			return null;
+		}
+		
+		guessed.add(guess);
+		return guess;
+	}
+	
+	
+	
+	private static void processGuess(char guess)
+	{
+		if (WORD.indexOf(guess) >= 0)
+		{
+			System.out.println("Correct!");
+			revealLetter(guess);
+		}
+		else
+		{
+			wrongGuesses++;
+			System.out.println("Wrong!");
+		}
+	}
+	
+	
+	
+	private static void revealLetter(char guess)
+	{
+		for (int i = 0; i < WORD.length(); i++)
+		{
+			if (WORD.charAt(i) == guess)
+			{
+				wordState.set(i, guess);
+			}
+		}
+	}
+	
+	
+	
+	private static boolean isWordGuessed()
+	{
+		return !wordState.contains('_');
+	}
+	
+	
+	
+	private static void printResult()
+	{
+		System.out.println(HangmanStage.fromWrongGuesses(wrongGuesses).getArt());
+		
+		if (isWordGuessed())
+		{
+			System.out.println("YOU WIN! The word was: " + WORD);
+		}
+		else
+		{
+			System.out.println("GAME OVER! The word was: " + WORD);
+		}
+	}
 }
